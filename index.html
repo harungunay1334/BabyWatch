@@ -3,10 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta name="theme-color" content="#09090b">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="manifest" href="manifest.json">
     <title>BabyWatch by Hexaforge</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -18,224 +14,114 @@
 </head>
 <body class="bg-zinc-950 text-zinc-100 min-h-screen flex flex-col overflow-x-hidden antialiased select-none">
 
-  <header class="w-full max-w-lg mx-auto px-6 pt-6 pb-2">
-    <div class="flex items-center justify-between bg-zinc-900/60 backdrop-blur-lg border border-zinc-800/80 rounded-2xl px-4 py-3 shadow-xl">
-      <div class="flex items-center space-x-3">
-        <div class="relative flex h-3 w-3">
-          <span id="status-ping" class="hidden animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-          <span id="status-dot" class="relative inline-flex rounded-full h-3 w-3 bg-zinc-600"></span>
+    <header class="w-full max-w-lg mx-auto px-6 pt-6 pb-2">
+        <div class="flex items-center justify-between bg-zinc-900/60 backdrop-blur-lg border border-zinc-800/80 rounded-2xl px-4 py-3 shadow-xl">
+            <div class="flex items-center space-x-3">
+                <div class="relative flex h-3 w-3">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-3 w-3 bg-red-500 glow-red"></span>
+                </div>
+                <div>
+                    <h1 class="text-md font-bold tracking-wide">BabyWatch</h1>
+                    <p class="text-[10px] text-zinc-400 font-medium tracking-wider uppercase">Hexaforge IoT</p>
+                </div>
+            </div>
+            <span class="text-xs font-semibold text-emerald-400" id="system-status">Bekleniyor...</span>
         </div>
-        <div>
-          <h1 class="text-md font-bold tracking-wide">BabyWatch</h1>
-          <p class="text-[10px] text-zinc-400 font-medium tracking-wider uppercase">Hexaforge IoT</p>
+    </header>
+
+    <main class="flex-grow w-full max-w-lg mx-auto px-6 py-4 flex flex-col justify-center space-y-5">
+        <div class="relative aspect-[4/3] w-full bg-zinc-900 border border-zinc-800/80 rounded-3xl overflow-hidden shadow-2xl glow-blue flex items-center justify-center">
+
+            <img id="stream-viewer" class="w-full h-full object-cover hidden" alt="" />
+
+            <div id="placeholder" class="flex flex-col items-center justify-center space-y-3 text-center px-6">
+                <div class="p-4 bg-zinc-950/60 rounded-full border border-zinc-800/50 animate-pulse">
+                    <svg class="w-8 h-8 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                    </svg>
+                </div>
+                <p class="text-zinc-400 text-sm font-semibold">Dişliye bas, IP'yi gir</p>
+            </div>
+
+            <div class="absolute top-4 left-4 bg-black/50 backdrop-blur-md border border-white/10 px-3 py-1 rounded-full text-[10px] font-bold tracking-wider text-white uppercase flex items-center space-x-1.5">
+                <span class="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse"></span>
+                <span>Canlı</span>
+            </div>
+
+            <button id="settings-btn" type="button" class="absolute top-4 right-4 bg-black/50 backdrop-blur-md border border-white/10 p-2 rounded-full text-zinc-300 transition-all active:scale-90">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+            </button>
+
+            <div id="ip-card" class="absolute inset-x-6 bottom-6 bg-zinc-900/95 backdrop-blur-lg border border-zinc-700 p-4 rounded-2xl shadow-2xl hidden">
+                <p class="text-xs font-semibold text-indigo-400 mb-2">ESP32-CAM IP Adresi</p>
+                <div class="flex space-x-2">
+                    <input id="ip-input" type="text" placeholder="Örn: 192.168.43.10" class="flex-grow bg-zinc-950 border border-zinc-700 rounded-xl px-3 py-2 text-sm font-semibold text-zinc-100 focus:outline-none focus:border-indigo-500">
+                    <button id="ip-save-btn" type="button" class="bg-indigo-600 text-white font-bold text-xs px-4 py-2 rounded-xl active:scale-95 transition-all">Bağlan</button>
+                </div>
+            </div>
         </div>
-      </div>
-      <span class="text-xs font-semibold text-zinc-400 max-w-[45%] text-right leading-tight" id="system-status">Bekleniyor...</span>
-    </div>
-  </header>
+    </main>
 
-  <main class="flex-grow w-full max-w-lg mx-auto px-6 py-4 flex flex-col justify-center space-y-5">
-    <div class="relative aspect-[4/3] w-full bg-zinc-900 border border-zinc-800/80 rounded-3xl overflow-hidden shadow-2xl glow-blue flex items-center justify-center">
+    <footer class="w-full max-w-lg mx-auto px-6 pb-6 text-center">
+        <p class="text-[10px] text-zinc-600 tracking-wider font-semibold uppercase">Hexaforge Embedded Engineering &copy; 2026</p>
+    </footer>
 
-      <img id="stream-viewer" alt="Canlı kamera" class="w-full h-full object-cover hidden" />
+    <script>
+        // Eski PWA service worker varsa kaldır (bozuk önbellek / HTTPS karışıklığı)
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then((regs) => regs.forEach((r) => r.unregister()));
+        }
 
-      <div id="placeholder" class="flex flex-col items-center justify-center space-y-3 text-center px-6">
-        <div class="p-4 bg-zinc-950/60 rounded-full border border-zinc-800/50 animate-pulse">
-          <svg class="w-8 h-8 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
-          </svg>
-        </div>
-        <p id="placeholder-text" class="text-zinc-400 text-sm font-semibold">Dişliye bas, IP'yi gir</p>
-      </div>
+        let espIP = localStorage.getItem('esp32_ip') || '';
 
-      <div id="live-badge" class="hidden absolute top-4 left-4 bg-black/50 backdrop-blur-md border border-white/10 px-3 py-1 rounded-full text-[10px] font-bold tracking-wider text-white uppercase flex items-center space-x-1.5">
-        <span class="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse"></span>
-        <span>Canlı</span>
-      </div>
+        const streamViewer = document.getElementById('stream-viewer');
+        const placeholder   = document.getElementById('placeholder');
+        const systemStatus  = document.getElementById('system-status');
+        const settingsBtn   = document.getElementById('settings-btn');
+        const ipCard        = document.getElementById('ip-card');
+        const ipInput       = document.getElementById('ip-input');
+        const ipSaveBtn     = document.getElementById('ip-save-btn');
 
-      <button type="button" id="settings-btn" class="absolute top-4 right-4 bg-black/50 backdrop-blur-md border border-white/10 p-2 rounded-full text-zinc-300 transition-all active:scale-90" aria-label="Ayarlar">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-        </svg>
-      </button>
+        if (espIP) ipInput.value = espIP;
 
-      <div id="ip-card" class="absolute inset-x-6 bottom-6 bg-zinc-900/95 backdrop-blur-lg border border-zinc-700 p-4 rounded-2xl shadow-2xl hidden">
-        <p class="text-xs font-semibold text-indigo-400 mb-2">ESP32-CAM IP Adresi</p>
-        <p class="text-[10px] text-zinc-500 mb-2">Telefon ve kamera aynı Wi‑Fi ağında olmalı.</p>
-        <div class="flex space-x-2">
-          <input id="ip-input" type="text" inputmode="decimal" autocomplete="off" placeholder="Örn: 192.168.1.42" class="flex-grow bg-zinc-950 border border-zinc-700 rounded-xl px-3 py-2 text-sm font-semibold text-zinc-100 focus:outline-none focus:border-indigo-500">
-          <button type="button" id="ip-save-btn" class="bg-indigo-600 text-white font-bold text-xs px-4 py-2 rounded-xl active:scale-95 transition-all">Bağlan</button>
-        </div>
-      </div>
-    </div>
-  </main>
+        settingsBtn.addEventListener('click', () => ipCard.classList.toggle('hidden'));
 
-  <footer class="w-full max-w-lg mx-auto px-6 pb-6 text-center">
-    <p class="text-[10px] text-zinc-600 tracking-wider font-semibold uppercase">Hexaforge Embedded Engineering &copy; 2026</p>
-  </footer>
+        ipSaveBtn.addEventListener('click', () => {
+            let raw = ipInput.value.trim();
+            try { raw = new URL(raw.includes('://') ? raw : 'http://' + raw).hostname; } catch (e) {}
+            raw = raw.split('/')[0];
 
-  <script>
-    let espIP = localStorage.getItem('esp32_ip') || '';
-    let retryTimer = null;
-    let connectGeneration = 0;
-    let streamConnected = false;
+            if (!raw) return;
+            espIP = raw;
+            localStorage.setItem('esp32_ip', espIP);
+            ipCard.classList.add('hidden');
+            connect();
+        });
 
-    const streamViewer = document.getElementById('stream-viewer');
-    const placeholder = document.getElementById('placeholder');
-    const placeholderText = document.getElementById('placeholder-text');
-    const systemStatus = document.getElementById('system-status');
-    const settingsBtn = document.getElementById('settings-btn');
-    const ipCard = document.getElementById('ip-card');
-    const ipInput = document.getElementById('ip-input');
-    const ipSaveBtn = document.getElementById('ip-save-btn');
-    const liveBadge = document.getElementById('live-badge');
-    const statusPing = document.getElementById('status-ping');
-    const statusDot = document.getElementById('status-dot');
+        function connect() {
+            if (!espIP) return;
+            const url = 'http://' + espIP + '/stream';
+            systemStatus.textContent = 'Bağlanıyor...';
 
-    if (espIP) ipInput.value = espIP;
+            const test = new Image();
+            test.onload = () => {
+                streamViewer.src = url;
+                streamViewer.classList.remove('hidden');
+                placeholder.classList.add('hidden');
+                systemStatus.textContent = 'Yayında ✓';
+            };
+            test.onerror = () => {
+                systemStatus.textContent = 'Bağlanamadı, tekrar deneniyor...';
+                setTimeout(connect, 5000);
+            };
+            test.src = url;
+        }
 
-    function setStatusUI(state) {
-      const map = {
-        idle: { text: 'Bekleniyor...', dot: 'bg-zinc-600', ping: false, live: false },
-        connecting: { text: 'Bağlanıyor...', dot: 'bg-amber-500', ping: false, live: false },
-        live: { text: 'Yayında ✓', dot: 'bg-emerald-500 glow-red', ping: true, live: true },
-        error: { text: 'Bağlanamadı', dot: 'bg-red-500 glow-red', ping: false, live: false }
-      };
-      const s = map[state] || map.idle;
-      systemStatus.textContent = s.text;
-      systemStatus.className = 'text-xs font-semibold max-w-[45%] text-right leading-tight ' +
-        (state === 'live' ? 'text-emerald-400' : state === 'error' ? 'text-red-400' : 'text-zinc-400');
-      statusDot.className = 'relative inline-flex rounded-full h-3 w-3 ' + s.dot;
-      statusPing.classList.toggle('hidden', !s.ping);
-      liveBadge.classList.toggle('hidden', !s.live);
-    }
-
-    function parseHost(raw) {
-      let value = (raw || '').trim();
-      if (!value) return '';
-      try {
-        value = new URL(value.includes('://') ? value : 'http://' + value).hostname;
-      } catch (_) {
-        value = value.split('/')[0].split(':')[0];
-      }
-      return value;
-    }
-
-    function streamUrl(bustCache) {
-      const base = 'http://' + espIP + '/stream';
-      return bustCache ? base + '?t=' + Date.now() : base;
-    }
-
-    function httpsBlocksHttpStream() {
-      return window.location.protocol === 'https:' &&
-        !window.location.hostname.match(/^(localhost|127\.0\.0\.1)$/);
-    }
-
-    function stopRetry() {
-      if (retryTimer) {
-        clearTimeout(retryTimer);
-        retryTimer = null;
-      }
-    }
-
-    function disconnect() {
-      connectGeneration++;
-      stopRetry();
-      streamConnected = false;
-      streamViewer.removeAttribute('src');
-      streamViewer.classList.add('hidden');
-      placeholder.classList.remove('hidden');
-      setStatusUI('idle');
-    }
-
-    function scheduleRetry() {
-      stopRetry();
-      retryTimer = setTimeout(() => connect(true), 5000);
-    }
-
-    function connect(isRetry) {
-      if (!espIP) return;
-
-      if (httpsBlocksHttpStream()) {
-        placeholderText.textContent = 'Sayfa HTTPS ise kamera (HTTP) engellenir. Yerel sunucu veya HTTP ile açın.';
-        systemStatus.textContent = 'HTTPS engeli';
-        systemStatus.className = 'text-xs font-semibold text-amber-400 max-w-[45%] text-right leading-tight';
-        ipCard.classList.remove('hidden');
-        return;
-      }
-
-      const gen = ++connectGeneration;
-      stopRetry();
-      streamConnected = false;
-
-      setStatusUI('connecting');
-      placeholderText.textContent = isRetry ? 'Yeniden bağlanılıyor...' : 'Kamera bekleniyor...';
-      placeholder.classList.remove('hidden');
-      streamViewer.classList.add('hidden');
-
-      const url = streamUrl(!!isRetry);
-
-      streamViewer.onload = function () {
-        if (gen !== connectGeneration) return;
-        streamConnected = true;
-        stopRetry();
-        streamViewer.classList.remove('hidden');
-        placeholder.classList.add('hidden');
-        setStatusUI('live');
-      };
-
-      streamViewer.onerror = function () {
-        if (gen !== connectGeneration) return;
-        streamConnected = false;
-        streamViewer.classList.add('hidden');
-        placeholder.classList.remove('hidden');
-        placeholderText.textContent = 'Bağlantı kurulamadı. IP ve Wi‑Fi’yi kontrol edin.';
-        setStatusUI('error');
-        systemStatus.textContent = 'Tekrar deneniyor...';
-        scheduleRetry();
-      };
-
-      // MJPEG: önce ayrı Image() ile test ETME — multipart akışta onload hiç gelmeyebilir
-      streamViewer.src = url;
-    }
-
-    function saveAndConnect() {
-      const host = parseHost(ipInput.value);
-      if (!host) {
-        ipInput.focus();
-        return;
-      }
-      espIP = host;
-      localStorage.setItem('esp32_ip', espIP);
-      ipInput.value = espIP;
-      ipCard.classList.add('hidden');
-      connect(false);
-    }
-
-    settingsBtn.addEventListener('click', () => ipCard.classList.toggle('hidden'));
-
-    ipSaveBtn.addEventListener('click', saveAndConnect);
-
-    ipInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') saveAndConnect();
-    });
-
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible' && espIP && !streamConnected) {
-        connect(true);
-      }
-    });
-
-    if ('serviceWorker' in navigator && location.protocol !== 'file:') {
-      navigator.serviceWorker.register('./sw.js').catch(() => {});
-    }
-
-    if (espIP) {
-      connect(false);
-    } else {
-      setStatusUI('idle');
-    }
-  </script>
+        if (espIP) connect();
+    </script>
 </body>
 </html>
