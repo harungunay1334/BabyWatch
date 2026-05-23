@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BabyWatch</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap');
+        body { font-family: 'Outfit', sans-serif; background: #09090b; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-4 text-zinc-100">
+
+    <!-- IP Giriş Alanı -->
+    <div class="w-full max-w-md mb-4 flex space-x-2">
+        <input id="ip" type="text" placeholder="ESP32 IP Adresi (Örn: 10.59.74.41)"
+            class="flex-grow bg-zinc-900 border border-zinc-700 rounded-xl px-4 py-2 text-sm font-semibold focus:outline-none focus:border-indigo-500 text-zinc-100 placeholder-zinc-600">
+        <button onclick="baslat()" class="bg-indigo-600 hover:bg-indigo-500 active:scale-95 transition-all text-white font-bold text-sm px-5 py-2 rounded-xl">
+            Bağlan
+        </button>
+    </div>
+
+    <!-- Video Ekranı -->
+    <div class="w-full max-w-md rounded-2xl overflow-hidden border border-zinc-800 shadow-2xl bg-zinc-900">
+        <img id="stream" class="w-full" src="" alt="" style="display:none;">
+        <div id="placeholder" class="flex items-center justify-center h-64 text-zinc-500 text-sm">
+            IP adresini gir ve Bağlan'a bas
+        </div>
+    </div>
+
+    <p class="mt-4 text-xs text-zinc-600">Hexaforge BabyWatch &copy; 2026</p>
+
+    <script>
+        // Sayfа açılınca kayıtlı IP varsa otomatik bağlan
+        const savedIP = localStorage.getItem('esp32_ip');
+        if (savedIP) {
+            document.getElementById('ip').value = savedIP;
+            baslat();
+        }
+
+        function baslat() {
+            let ip = document.getElementById('ip').value.trim();
+            // http:// veya /stream varsa temizle, sadece IP al
+            ip = ip.replace(/^https?:\/\//i, '').split('/')[0];
+            if (!ip) return;
+
+            localStorage.setItem('esp32_ip', ip);
+
+            const url = 'http://' + ip + '/stream';
+            const stream = document.getElementById('stream');
+            const placeholder = document.getElementById('placeholder');
+
+            placeholder.textContent = 'Bağlanıyor...';
+            stream.style.display = 'none';
+
+            stream.onload = () => {
+                placeholder.style.display = 'none';
+                stream.style.display = 'block';
+            };
+            stream.onerror = () => {
+                placeholder.textContent = 'Bağlanamadı, tekrar deneniyor...';
+                placeholder.style.display = 'flex';
+                stream.style.display = 'none';
+                setTimeout(baslat, 5000);
+            };
+            stream.src = url;
+        }
+    </script>
+</body>
+</html>
