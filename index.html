@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BabyWatch by Hexaforge</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Outfit', sans-serif; -webkit-tap-highlight-color: transparent; }
+        .glow-red   { box-shadow: 0 0 15px rgba(239, 68, 68, 0.5); }
+        .glow-green { box-shadow: 0 0 15px rgba(34, 197, 94, 0.5); }
+        .glow-blue  { box-shadow: 0 0 20px rgba(59, 130, 246, 0.3); }
+        .night-filter { filter: brightness(1.4) contrast(1.1) hue-rotate(90deg) saturate(0.3) sepia(0.5); }
+    </style>
+</head>
+<body class="bg-zinc-950 text-zinc-100 min-h-screen flex flex-col justify-between overflow-x-hidden antialiased select-none">
+
+    <!-- Top Header -->
+    <header class="w-full max-w-lg mx-auto px-6 pt-6 pb-2">
+        <div class="flex items-center justify-between bg-zinc-900/60 backdrop-blur-lg border border-zinc-800/80 rounded-2xl px-4 py-3 shadow-xl">
+            <div class="flex items-center space-x-3">
+                <div class="relative flex h-3 w-3">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-3 w-3 bg-red-500 glow-red"></span>
+                </div>
+                <div>
+                    <h1 class="text-md font-bold tracking-wide text-zinc-100">BabyWatch</h1>
+                    <p class="text-[10px] text-zinc-400 font-medium tracking-wider uppercase">Hexaforge IoT</p>
+                </div>
+            </div>
+
+            <!-- Indicators -->
+            <div class="flex items-center space-x-4">
+                <!-- Wi-Fi Status -->
+                <div class="flex flex-col items-center">
+                    <svg id="wifi-icon" class="w-4 h-4 text-zinc-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.14 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"/>
+                    </svg>
+                    <span id="wifi-label" class="text-[9px] text-zinc-600 font-semibold mt-0.5">Wi-Fi</span>
+                </div>
+                <!-- IR LED Status -->
+                <div class="flex flex-col items-center">
+                    <div id="ir-dot" class="w-3 h-3 rounded-full bg-zinc-700"></div>
+                    <span class="text-[9px] text-zinc-600 font-semibold mt-0.5">IR</span>
+                </div>
+                <!-- Camera Status -->
+                <div class="flex flex-col items-center">
+                    <svg id="cam-icon" class="w-4 h-4 text-zinc-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                    </svg>
+                    <span id="cam-label" class="text-[9px] text-zinc-600 font-semibold mt-0.5">Kamera</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Video Stream -->
+    <main class="flex-grow w-full max-w-lg mx-auto px-6 py-4 flex flex-col justify-center space-y-4">
+        <div class="relative aspect-[4/3] w-full bg-zinc-900 border border-zinc-800/80 rounded-3xl overflow-hidden shadow-2xl glow-blue flex items-center justify-center">
+
+            <img id="stream" class="w-full h-full object-cover" style="display:none;" />
+
+            <div id="placeholder" class="flex flex-col items-center justify-center space-y-3 text-center px-6">
+                <div class="p-4 bg-zinc-950/60 rounded-full border border-zinc-800/50 animate-pulse">
+                    <svg class="w-8 h-8 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                    </svg>
+                </div>
+                <p id="status-text" class="text-zinc-400 text-sm font-semibold">Dişliye bas, IP'yi gir</p>
+            </div>
+
+            <!-- Canlı Etiketi -->
+            <div id="live-badge" class="absolute top-4 left-4 bg-black/50 backdrop-blur-md border border-white/10 px-3 py-1 rounded-full text-[10px] font-bold tracking-wider text-white uppercase flex items-center space-x-1.5 hidden">
+                <span class="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse"></span>
+                <span>Canlı</span>
+            </div>
+
+            <!-- Gece Görüşü Toggle -->
+            <button id="night-btn" onclick="toggleNight()" class="absolute bottom-4 left-4 bg-black/50 backdrop-blur-md border border-white/10 px-3 py-1.5 rounded-full text-[10px] font-bold text-emerald-400 tracking-wider uppercase flex items-center space-x-1.5 active:scale-95 transition-all">
+                <span>🌙</span>
+                <span id="night-label">Gece Görüşü</span>
+            </button>
+
+            <!-- Ayarlar Butonu -->
+            <button id="settings-btn" onclick="toggleCard()" class="absolute top-4 right-4 bg-black/50 backdrop-blur-md border border-white/10 p-2 rounded-full text-zinc-300 transition-all active:scale-90">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+            </button>
+
+            <!-- IP Giriş Kartı -->
+            <div id="ip-card" class="absolute inset-x-6 bottom-6 bg-zinc-900/95 backdrop-blur-lg border border-zinc-700 p-4 rounded-2xl shadow-2xl hidden">
+                <p class="text-xs font-semibold text-indigo-400 mb-2">ESP32-CAM IP Adresi</p>
+                <div class="flex space-x-2">
+                    <input id="ip-input" type="text" placeholder="Örn: 10.59.74.41"
+                        class="flex-grow bg-zinc-950 border border-zinc-700 rounded-xl px-3 py-2 text-sm font-semibold text-zinc-100 focus:outline-none focus:border-indigo-500 placeholder-zinc-600">
+                    <button onclick="baglat()" class="bg-indigo-600 text-white font-bold text-xs px-4 py-2 rounded-xl active:scale-95 transition-all">Bağlan</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Kontrol Butonları -->
+        <div class="grid grid-cols-2 gap-3">
+            <!-- IR LED Toggle -->
+            <button id="ir-btn" onclick="toggleIR()" class="flex items-center justify-center space-x-2 bg-zinc-900 border border-zinc-800 rounded-2xl px-4 py-3 active:scale-95 transition-all">
+                <div id="ir-btn-dot" class="w-2.5 h-2.5 rounded-full bg-zinc-600"></div>
+                <span class="text-sm font-semibold text-zinc-300">IR LED</span>
+                <span id="ir-btn-label" class="text-xs font-bold text-zinc-500">KAPALI</span>
+            </button>
+
+            <!-- Tam Ekran -->
+            <button onclick="fullscreen()" class="flex items-center justify-center space-x-2 bg-zinc-900 border border-zinc-800 rounded-2xl px-4 py-3 active:scale-95 transition-all">
+                <svg class="w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/>
+                </svg>
+                <span class="text-sm font-semibold text-zinc-300">Tam Ekran</span>
+            </button>
+        </div>
+    </main>
+
+    <footer class="w-full max-w-lg mx-auto px-6 pb-6 text-center">
+        <p class="text-[10px] text-zinc-600 tracking-wider font-semibold uppercase">Hexaforge Embedded Engineering &copy; 2026</p>
+    </footer>
+
+    <script>
+        let espIP = localStorage.getItem('esp32_ip') || '';
+        let irOn = false;
+        let nightOn = false;
+        let connected = false;
+
+        const streamEl   = document.getElementById('stream');
+        const placeholder = document.getElementById('placeholder');
+        const statusText  = document.getElementById('status-text');
+        const liveBadge   = document.getElementById('live-badge');
+        const ipInput     = document.getElementById('ip-input');
+
+        if (espIP) { ipInput.value = espIP; connect(); }
+
+        function toggleCard() {
+            document.getElementById('ip-card').classList.toggle('hidden');
+        }
+
+        function baglat() {
+            let raw = ipInput.value.trim();
+            raw = raw.replace(/^https?:\/\//i, '').split('/')[0];
+            if (!raw) return;
+            espIP = raw;
+            localStorage.setItem('esp32_ip', espIP);
+            document.getElementById('ip-card').classList.add('hidden');
+            connect();
+        }
+
+        function connect() {
+            if (!espIP) return;
+            const url = 'http://' + espIP + '/stream';
+            statusText.textContent = 'Bağlanıyor...';
+
+            streamEl.onload = () => {
+                connected = true;
+                placeholder.style.display = 'none';
+                streamEl.style.display = 'block';
+                liveBadge.classList.remove('hidden');
+                setWifi(true);
+                setCam(true);
+            };
+            streamEl.onerror = () => {
+                connected = false;
+                statusText.textContent = 'Bağlanamadı, tekrar deneniyor...';
+                placeholder.style.display = 'flex';
+                streamEl.style.display = 'none';
+                liveBadge.classList.add('hidden');
+                setWifi(false);
+                setCam(false);
+                setTimeout(connect, 5000);
+            };
+            streamEl.src = url;
+        }
+
+        function toggleIR() {
+            if (!espIP) return;
+            irOn = !irOn;
+            fetch('http://' + espIP + '/ir?state=' + (irOn ? '1' : '0'))
+                .catch(() => {});
+            const dot   = document.getElementById('ir-btn-dot');
+            const label = document.getElementById('ir-btn-label');
+            const irDot = document.getElementById('ir-dot');
+            if (irOn) {
+                dot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-400 glow-green';
+                label.textContent = 'AÇIK';
+                label.className = 'text-xs font-bold text-emerald-400';
+                irDot.className = 'w-3 h-3 rounded-full bg-emerald-400 glow-green';
+            } else {
+                dot.className = 'w-2.5 h-2.5 rounded-full bg-zinc-600';
+                label.textContent = 'KAPALI';
+                label.className = 'text-xs font-bold text-zinc-500';
+                irDot.className = 'w-3 h-3 rounded-full bg-zinc-700';
+            }
+        }
+
+        function toggleNight() {
+            nightOn = !nightOn;
+            streamEl.className = nightOn
+                ? 'w-full h-full object-cover night-filter'
+                : 'w-full h-full object-cover';
+            document.getElementById('night-btn').className = nightOn
+                ? 'absolute bottom-4 left-4 bg-emerald-500/30 backdrop-blur-md border border-emerald-400/40 px-3 py-1.5 rounded-full text-[10px] font-bold text-emerald-300 tracking-wider uppercase flex items-center space-x-1.5 active:scale-95 transition-all'
+                : 'absolute bottom-4 left-4 bg-black/50 backdrop-blur-md border border-white/10 px-3 py-1.5 rounded-full text-[10px] font-bold text-emerald-400 tracking-wider uppercase flex items-center space-x-1.5 active:scale-95 transition-all';
+        }
+
+        function fullscreen() {
+            const el = document.querySelector('main > div');
+            if (el.requestFullscreen) el.requestFullscreen();
+            else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+        }
+
+        function setWifi(on) {
+            const icon  = document.getElementById('wifi-icon');
+            const label = document.getElementById('wifi-label');
+            icon.className  = 'w-4 h-4 ' + (on ? 'text-emerald-400' : 'text-zinc-600');
+            label.className = 'text-[9px] font-semibold mt-0.5 ' + (on ? 'text-emerald-400' : 'text-zinc-600');
+        }
+
+        function setCam(on) {
+            const icon  = document.getElementById('cam-icon');
+            const label = document.getElementById('cam-label');
+            icon.className  = 'w-4 h-4 ' + (on ? 'text-emerald-400' : 'text-zinc-600');
+            label.className = 'text-[9px] font-semibold mt-0.5 ' + (on ? 'text-emerald-400' : 'text-zinc-600');
+        }
+    </script>
+</body>
+</html>
